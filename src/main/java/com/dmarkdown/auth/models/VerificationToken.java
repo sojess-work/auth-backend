@@ -10,11 +10,12 @@ import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
 
+
+@Entity
 @Data
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
-@Entity
+@NoArgsConstructor
 @Table(name = "verification_token")
 public class VerificationToken {
     private static final int EXPIRATION = 60;

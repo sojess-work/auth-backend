@@ -1,24 +1,22 @@
 package com.dmarkdown.auth.services;
 
+import com.dmarkdown.auth.Exceptions.UserAlreadyExistsException;
 import com.dmarkdown.auth.authentication.AuthenticationRequest;
 import com.dmarkdown.auth.authentication.AuthenticationResponse;
 import com.dmarkdown.auth.authentication.RegisterRequest;
 import com.dmarkdown.auth.config.JwtService;
 import com.dmarkdown.auth.enums.Role;
-import com.dmarkdown.auth.event.OnRegistrationCompleteEvent;
 import com.dmarkdown.auth.models.UserInfo;
 import com.dmarkdown.auth.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -29,11 +27,11 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
-    private final ApplicationEventPublisher eventPublisher;
+
+    private final EmailService emailService;
+
+    private final UserService userService;
     public ResponseEntity<AuthenticationResponse> register(RegisterRequest userDetails, HttpServletRequest request) {
-        if(emailExist(userDetails.getEmail())){
-            //Todo
-        }
 
         var user = UserInfo.builder()
                 .firstName(userDetails.getFirstName())
@@ -42,25 +40,26 @@ public class AuthenticationService {
                 .password(passwordEncoder.encode(userDetails.getPassword()))
                 .role(Role.USER)
                 .build();
-         final String appUrl = request.getContextPath();
          try {
-             userRepository.save(user);
-             eventPublisher.publishEvent(new OnRegistrationCompleteEvent(user,request.getLocale(),appUrl));
-         }catch (Exception e){
-             log.error("Error occured while saving user");
+             userService.registerNewUser(user);
+             ResponseEntity<AuthenticationResponse> response = emailService.sendVerificationMail(user);
+             return response;
+         }catch (UserAlreadyExistsException e){
+             log.error("User "+ user.getEmail()+" already exists");
              return  ResponseEntity.badRequest().body(AuthenticationResponse.builder()
-                     .token("Error occured while saving user").build());
+                     .message("User with the email "+ user.getEmail()+" already exists").build());
          }
-        var jwtToken = jwtService.generateToken(user);
-        return ResponseEntity.ok(AuthenticationResponse.builder()
-                .token(jwtToken).build());
+         catch (Exception e){
+             log.error("Error occured while saving user");
+             return  ResponseEntity.ok().body(AuthenticationResponse.builder()
+                     .message("Error occured while saving user").build());
+         }
+//        var jwtToken = jwtService.generateToken(user);
+//        return ResponseEntity.ok(AuthenticationResponse.builder()
+//                .token(jwtToken).build());
     }
 
-    private boolean emailExist(String email) {
 
-        Optional<UserInfo> user = userRepository.findByEmail(email);
-        return !user.isEmpty();
-    }
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
         authenticationManager.authenticate(
