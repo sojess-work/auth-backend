@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-auth-app-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: my-auth-app-backend
+  template:
+    metadata:
+      labels:
+        app: my-auth-app-backend
+        version: v1.0.0
+    spec:
+      containers:
+        - name: my-auth-app-backend
+          image: gcr.io/verdant-tempest-376308/myAuthAppBackend:auth-0.0.1-SNAPSHOT
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-config
+                  key: host
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: postgres-config
+                  key: name
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: postgres_user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: postgres_password
+# service type loadbalancers
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-auth-app-svc
+spec:
+  selector:
+    app: my-auth-app-backend
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: LoadBalancer
