@@ -18,7 +18,6 @@ import java.util.Date;
 @NoArgsConstructor
 @Table(name = "verification_token")
 public class VerificationToken {
-    private static final int EXPIRATION = 60;
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -32,10 +31,5 @@ public class VerificationToken {
 
     private Date expiryDate;
 
-    private Date calculateExpiryDate(int expiryTimeInMinutes) {
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(new Timestamp(cal.getTime().getTime()));
-        cal.add(Calendar.MINUTE, expiryTimeInMinutes);
-        return new Date(cal.getTime().getTime());
-    }
+
 }

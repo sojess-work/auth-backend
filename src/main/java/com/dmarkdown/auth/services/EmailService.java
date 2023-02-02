@@ -15,21 +15,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.sql.Timestamp;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class EmailService {
-
     private final VerificationTokenService tokenService;
     private final ApplicationProperties applicationProperties;
     private final AuthAppServiceConfiguration serviceConfiguration;
     private  final RestTemplate restTemplate;
 
-    public ResponseEntity<AuthenticationResponse> sendVerificationMail(UserInfo user) {
-        String token = UUID.randomUUID().toString();
-        tokenService.createVerificationToken(user, token);
+    public ResponseEntity<AuthenticationResponse> sendVerificationMail(UserInfo user, String token) {
 
         VerificationRequest request = new VerificationRequest();
         request.setFrom("noreply@authapp.com");
@@ -41,11 +41,9 @@ public class EmailService {
         final StringBuilder url =  new StringBuilder();
         url.append(applicationProperties.getEmailServiceUrl()).append(serviceConfiguration.getEmailServiceSendVerificationEmailEndpoint());
         try{
-//            ParameterizedTypeReference<?> responseObj =
-//                    new ParameterizedTypeReference<>() {
-//                    };
             ResponseEntity<AuthenticationResponse> response =  restTemplate.exchange(url.toString()
                     , HttpMethod.POST,httpEntity,AuthenticationResponse.class);
+            response.getBody().setToken(token);
             return response;
         }catch (Exception e){
             log.error("Failed to send email to: " +user.getEmail());
