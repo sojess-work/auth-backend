@@ -27,7 +27,7 @@ public class UserService {
         }
         return ResponseEntity.ok(AuthenticationResponse.builder().message("User Saved Succesfully").build());
     }
-    private boolean emailExist(String email) {
+    public boolean emailExist(String email) {
 
         Optional<UserInfo> user = userRepository.findByEmail(email);
         return !user.isEmpty();

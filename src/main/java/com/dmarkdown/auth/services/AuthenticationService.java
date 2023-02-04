@@ -121,4 +121,8 @@ public class AuthenticationService {
         Calendar cal = Calendar.getInstance();
         return (token.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0;
     }
+
+    public boolean isUserExists(String email) {
+        return userService.emailExist(email);
+    }
 }

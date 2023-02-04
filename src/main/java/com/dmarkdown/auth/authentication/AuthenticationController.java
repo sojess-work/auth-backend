@@ -31,4 +31,8 @@ public class AuthenticationController {
     public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request){
         return  ResponseEntity.ok(authenticationService.authenticate(request));
     }
+    @GetMapping("/checkUserExists")
+    public ResponseEntity<Boolean> isUserExists(@RequestParam String email){
+        return ResponseEntity.ok(authenticationService.isUserExists(email));
+    }
 }
