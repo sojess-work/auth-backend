@@ -35,7 +35,8 @@ public class WebSecurityconfig {
                 .cors()
                 .and()
                 .authenticationProvider(authenticationProvider)
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class).build();
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .build();
 
     }
     @Bean
