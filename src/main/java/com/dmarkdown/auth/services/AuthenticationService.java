@@ -53,7 +53,7 @@ public class AuthenticationService {
              return emailService.sendVerificationMail(user,token);
          }catch (UserAlreadyExistsException e){
              log.error("User "+ user.getEmail()+" already exists");
-             return  ResponseEntity.badRequest().body(AuthenticationResponse.builder()
+             return  ResponseEntity.ok().body(AuthenticationResponse.builder()
                      .message("User with the email "+ user.getEmail()+" already exists").build());
          }
          catch (Exception e){
@@ -89,13 +89,13 @@ public class AuthenticationService {
             Calendar cal = Calendar.getInstance();
             if((verificationToken.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0) {
 
-                return ResponseEntity.badRequest().body(AuthenticationResponse.builder().message("Url Expired").build());
+                return ResponseEntity.ok().body(AuthenticationResponse.builder().message("Url Expired").build());
             }
             user.setEnabled(true);
             userRepository.save(user);
             return ResponseEntity.ok(AuthenticationResponse.builder().message("User Confirmed").build());
         } catch (VerificationTokenNotFoundException e) {
-           return ResponseEntity.badRequest().body(AuthenticationResponse.builder().message("Invalid Url").build());
+           return ResponseEntity.ok().body(AuthenticationResponse.builder().message("Invalid Url").build());
         }
     }
 
@@ -112,7 +112,7 @@ public class AuthenticationService {
             }
         } catch (VerificationTokenNotFoundException e) {
             log.error("Invalid user with username: "+user.getEmail());
-            return ResponseEntity.badRequest().body(AuthenticationResponse.builder().message("Invalid User").build());
+            return ResponseEntity.ok().body(AuthenticationResponse.builder().message("Invalid User").build());
         }
         return response;
     }
