@@ -111,8 +111,11 @@ public class AuthenticationService {
                 response = emailService.sendVerificationMail(userInfo,token.getToken());
             }
         } catch (VerificationTokenNotFoundException e) {
-            log.error("Invalid user with username: "+user.getEmail());
-            return ResponseEntity.ok().body(AuthenticationResponse.builder().message("Invalid User").build());
+            if(userService.emailExist(user.getEmail())){
+                tokenService.createVerificationToken(userInfo);
+            }
+            return ResponseEntity.ok().body(AuthenticationResponse.builder()
+                    .message("Verification Email Sent Succesfully to: " +userInfo.getEmail()).build());
         }
         return response;
     }
