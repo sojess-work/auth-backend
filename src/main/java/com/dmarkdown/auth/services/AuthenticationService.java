@@ -129,7 +129,27 @@ public class AuthenticationService {
         }
         return response;
     }
-
+    public ResponseEntity<AuthenticationResponse> resendVerificationEmail(String token) {
+        ResponseEntity<AuthenticationResponse> response ;
+        UserInfo userInfo = new UserInfo();
+        try{
+            VerificationToken verificationToken = tokenService.getVerificationTokenDetails(token);
+            userInfo = verificationToken.getUser();
+            if( verificationToken !=null && userInfo!=null){
+                final String newToken = tokenService.updateVerificationToken(verificationToken);
+                response = emailService.sendVerificationMail(userInfo,newToken);
+            }else{
+                response = ResponseEntity.ok().body(AuthenticationResponse.builder().message("Internal Error").build());
+            }
+        } catch (VerificationTokenNotFoundException e) {
+            if(userService.emailExist(userInfo.getEmail())){
+                tokenService.createVerificationToken(userInfo);
+            }
+            return ResponseEntity.ok().body(AuthenticationResponse.builder()
+                    .message("Verification Email Sent Succesfully to: " +userInfo.getEmail()).build());
+        }
+        return response;
+    }
     private boolean isTokenExpired(VerificationToken token){
         Calendar cal = Calendar.getInstance();
         return (token.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0;

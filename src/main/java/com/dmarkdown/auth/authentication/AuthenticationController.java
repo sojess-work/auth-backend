@@ -27,6 +27,10 @@ public class AuthenticationController {
     public ResponseEntity<AuthenticationResponse> resendVerificationEmail(@RequestBody RegisterRequest user){
         return authenticationService.resendVerificationEmail( user);
     }
+    @GetMapping("/resendVerificationEmail")
+    public ResponseEntity<AuthenticationResponse> resendVerificationEmail(@RequestParam String token){
+        return authenticationService.resendVerificationEmail( token);
+    }
     @PostMapping("/authenticate")
     public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request){
         return  ResponseEntity.ok(authenticationService.authenticate(request));
